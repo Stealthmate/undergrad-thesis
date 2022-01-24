@@ -1,0 +1,53 @@
+\documentclass[12pt,epsf]{jreport}
+\usepackage[dvips]{graphicx} % 図の貼り付け用
+\usepackage{ics} % ICS卒論・修論スタイルファイル
+\usepackage{makeidx} %索引生成用パッケージ
+\usepackage{tabularx}% 横幅指定で表を作成
+\usepackage{latexsym} % 数学記号用パッケージ
+\usepackage{custom}
+
+%%%%%%%%%
+\title{前方に人がいることを許した自転車共有問題}
+\author{ハララノフ ヴァレリ}
+% \date{2022-02-10}
+\addbibresource{refs.bib}
+%%%%%%%%%
+
+\papercode{ICS-0XM-XXX}
+\affiliation{工学部情報工学科}
+\date{令和3年2月10日提出}
+\supervisor{山田 敏規教授}
+\labname{山田研究室}
+\studentID{18TI018}
+
+\begin{document}
+
+\maketitle
+
+\chapter{はじめに}
+\input{introduction}
+\chapter{自転車共有問題 (BS)}\label{section:bs}
+\input{section-bs}
+\chapter{前方に人がいることを許した自転車共有問題 (FSABS) }\label{section:fsabs}
+\section{問題設定と定義}
+\input{section-fsabs/defs}
+\section{preliminary observations {\color{red}修正が必要}}
+\input{section-fsabs/preliminary}
+\section{FSABS を解くアルゴリズム \textsc{Solve-FSABS}}
+\input{section-fsabs/algorithm}
+\section{\textsc{Solve-FSABS} の正当性及び計算時間}
+\input{section-fsabs/correctness}
+\chapter{結論と今後の課題}\label{section:conclusion}
+\input{section-conclusion}
+
+\renewcommand{\refname}{参考文献}
+\nocite{*}
+\printbibliography
+
+% \begin{appendices}
+% \section{$S$ から $(M, X)$ を生成する手続き}
+% \label{appendix:s-to-mx}
+% TODO
+% \end{appendices}
+
+\end{document}

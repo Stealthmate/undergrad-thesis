@@ -1,0 +1,70 @@
+FSABS を定義する前に 2 つの補助的概念を導入する．
+
+まず，各人の初期位置を表すための配列 $A \in {(0, 1)}^{m}$ を考え， $A$ の要素が全員分あることに注意する．理論的には前方にいる人の初期位置だけで十分であるが，以降で紹介するアルゴリズムの動作の都合上，全員分の初期位置を用意する方が扱いやすいため，ここでは出発点にいる人の初期位置を 0 とし，その人達の初期位置を含めた $A$ を考える．
+
+BS の出力は各人が各小区間で使用した自転車の番号を表す行列 $M$ と各小区間の長さを表すベクトル $X$ と定義した． FSABS の出力にもこのような形を採用することはできるが，上記同様に解法アルゴリズムの動作の都合上，次のような形の出力を考える． $m$ 個の要素からなる配列 $S$ を考え，それぞれの要素がそれぞれの人に対応するとする．人 $i$ に対して $S_i$ の値は $n_i$ 個の要素からなる配列であり，それの各要素が $(\alpha_{i,j}, \beta_{i,j})$ のような順序対であり，人 $i$ が自転車 $\beta_{i,j}$ で距離 $\alpha_{i,j}$ を連続移動したことを意味する．ただし，歩行したならば $\beta_{i,j} = 0$ と置き， $0 < j < n_i$ とする．このような $S$ を自由スケジュールと呼ぶ．また， $S_i$ のことを $S$ の行と呼ぶ．
+
+$S_i$ の各要素に対応する $[0, 1]$ 上の始点と終点をそれぞれ $\rho_{i,j}$ 及び $\sigma_{i,j}$ で表すことができる．
+\begin{align}
+  \rho_{i,j} &= A_i + \sum_{k=1}^{k < j}\alpha_{i, k} \\
+  \sigma_{i,j} &= \rho_{i,j} + \alpha_{i, k}
+\end{align}
+これらをまとめて，$\alpha_{i,j}$ に対応する小区間を $\chi_{i,j} = (\rho_{i,j}, \sigma_{i,j})$ と表す．
+
+$S$ において人 $i$ が点 $x \geq A_i$ に到達する時間を $t^{\prime}_i(x)$ とする． $t^{\prime}_i(x)$ の値は $S_i$ の要素の線形和として求めることができるが，複雑な表記を必要とするためここでは省略する．全体の到着時間は BS と同様にそれぞれの人の到着時間の最大値となるので， $S$ における到着時間を
+\begin{equation}
+  \tau^\prime(S) = \max_i t^{\prime}_i(1)
+\end{equation}
+と定義できる．また， $S$ において人 $i$ が移動した距離を
+\begin{equation}
+  L(S_i) = \sum_{j=1}^{n_i} \alpha_{i,j}
+\end{equation}
+と表す．
+
+次に $S$ が実行可能解であるために \textcite{czyzowicz} と同様な条件を述べる．
+\begin{definition}\label{definition:fsabs-feasible-schedule}
+  入力 $(m, U, A)$ と上述の構造を持つ自由スケジュール $S$ に対し，以下が成り立つときかつそのときに限り $S$ を実行可能な自由スケジュールと呼ぶ．
+  \begin{enumerate}
+  \item $1 \leq \forall i \leq m\pause L(S_i) = 1 - A_i$．
+  \item $\beta_{i,j} \neq 0$ かつ $\rho_{i,j} \neq 0$ であるならば $\sigma_{i^\prime, j^\prime} = \rho_{i,j} \text{ かつ } \beta_{i^\prime, j^\prime} = \beta_{i,j}$ を満たす $i^\prime$, $j^\prime$ が存在する．
+  \item $\beta_{i,j} \neq 0$ であるならば $\chi_{i,j} \cap \chi_{i^\prime,j^\prime} \neq \emptyset$ となるような $i^\prime$ 及び $j^\prime$ に対し $\beta_{i,j} \neq \beta_{i^\prime,j ^\prime}$．
+  \item $\beta_{i,j} = \beta_{i^\prime, j^\prime}$ 及び $\sigma_{i,j} \leq \rho_{i^\prime, j^{\prime}}$ ならば $t^{\prime}_i(\sigma_{i, j}) \leq t^{\prime}_{i^\prime}(\rho_{i^\prime, j^\prime})$．
+  \item $1 \leq \forall j \leq b\pause \exists i \st \beta_{i,n_i} = j$．
+  \end{enumerate}
+\end{definition}
+
+以上の内容をまとめて， FSABS を次のように定義する．
+\begin{problem}
+  \problemtitle{FSABS}
+  \probleminput{
+    $m \in \N$: 人の数． \newline
+    $U \in (0, 1)^{b}$: 自転車の速度の逆数を格納した昇順配列． \newline
+    $A \in (0, 1)^{m}$: 各人の初期値を格納した昇順配列．
+  }
+  \problemoutput{
+    $S$: 実行可能な自由スケジュール．
+  }
+  \problemobjective{
+    $\tau^\prime(S)$ を最小化すること．
+  }
+\end{problem}
+また，以降の議論では具体的な出力に関係なく，入力 $(m,U, A)$ に対する最適な到着時間を $\bar\tau^\prime(m, U, A)$ と表す．
+
+解法アルゴリズムでは人をグループに分け，それぞれの移動を独立に考えてからそれぞれの自由スケジュールを組み合わせるという操作を頻用する．この操作を「縦に組み合わせる」と名付け，以下の主張でその正当性を保証する．
+\begin{claim}\label{claim:vertical-composition}
+  $(m_1, U_1 = [u_1, u_2, \ldots, u_{b_1}], A_1)$ 及び $(m_2, U_2 = [u_{b_1+1}, u_{b_1+2}, \ldots, u_{b_1+b_2}], A_2)$ をそれぞれ FSABS の入力とし， $S^{(1)}$ 及び $S^{(2)}$ をそれぞれに対する実行可能解とする． $A_1$ 及び $A_2$ の要素を $A_3$ にまとめ，昇順に並べることで新しくできた人の番号を用いて $S^{(1)}$ 及び $S^{(2)}$ の行を適切な順番に並べた $S^{(3)}$ を構成する．このとき， $S^{(3)}$ は入力 $(m_1 + m_2, U_1 + U_2, A^{(3)})$ に対する実行可能解となり，その到着時間が式~(\ref{eq:eq2}) となる．\footnote{ただし $U_1 + U_2$ は $U_1$ と $U_2$ の連結を意味し，以降の議論でも配列同士の加算記号を連結の意味で用いる．}
+  \begin{equation}
+    \tau^\prime(S^{(3)}) = \max \{ \tau^\prime(S^{(1)}), \tau^\prime(S^{(2)}) \}\label{eq:eq2}
+  \end{equation}
+  \hfill $\square$
+\end{claim}
+
+最後に， FSABS が線形スケール化可能であることを主張しておく．
+\begin{claim}\label{claim:fsabs-scalable}
+  FSABS の入力 $(m, U, A)$ に対し $S$ が実行可能解であるとする． \defref{fsabs-feasible-schedule} や FSABS の入力に対する条件を適切に修正し，区間 $[0, 1]$ ではなく $[0, a]$ に対し問題を定義したとする．以下で与えられる $A^\prime$ 及び $S^\prime$ に対し， $S^\prime$ は入力 $(m, U, A^\prime)$ に対する実行可能解となり， $\tau^\prime(S^\prime) = a\tau^\prime(S)$ となる．
+  \begin{align}
+    A^\prime_i &= aA_i \\
+    (\alpha^\prime_{i,j},\beta^\prime_{i,j}) &= (a\alpha_{i,j},\beta_{i,j})
+  \end{align}
+  ただし， $(\alpha_{i,j},\beta_{i,j})$ を $S$ の元とし， $(\alpha^\prime_{i,j},\beta^\prime_{i,j})$ を $S^\prime$ の元とする．\hfill $\square$
+\end{claim}

@@ -1,0 +1,126 @@
+本節では FSABS と BS の解の形の互換性について説明した上で， FSABS の下界を定める．なお，次の 2 つの主張を確認することは難しくないが，証明がややテクニカルで長いため，ここでは省略する．
+
+問題の定義上， BS のインスタンス集合は意味的に FSABS のインスタンス集合の部分集合であり， BS の入力 $(m, U)$ に対し $A_i = 0$ と置くと FSABS における同様なインスタンスが得られる．また， BS において実行可能なスケジュール $(M, X)$ に対し以下の要素からなる自由スケジュール $S$ を考える．
+\begin{equation}
+  (\alpha_{i,j}, \beta_{i,j}) = (X_j, M_{i,j})
+\end{equation}
+$X$ の要素数を $n$ とすると， $S$ は $m$ 行からなり，各行がちょうど $n_i = n$ 個の要素を持つ．このとき，次の主張が自然に得られる．
+\begin{claim}\label{claim:bs-to-fsabs}
+  BS の入力 $(m, U)$ に対し任意の実行可能解 $(M, X)$ 及び上記の方法で定義した $S$ を考える． $S$ に対し次が成り立つ．
+  \begin{itemize}
+  \item $m$ 個の 0 からなる $A$ に対し， $S$ は FSABS の入力 $(m, U, A)$ に対する実行可能解である．
+  \item $\tau^\prime(S) = \tau(M, X)$．
+  \end{itemize}
+  \hfill $\square$
+\end{claim}
+
+BS の入力では前方にいる人を表現することができないが，任意の実行可能な自由スケジュール $S$ を $(M, X)$ の形に変換することができる． $S$ に対し次の集合を考える．
+\begin{equation}
+  I = \{ \rho_{i, j} : i \leq m\pause j\leq n_i \} \setminus \{ 0 \}
+\end{equation}
+$I$ の要素数を $n - 1$ とする． 区間 $[0, 1]$ を $I$ の要素で切って分割すると $n$ 個の小区間ができる．それらの長さを $X$ の要素とし， $\gamma_k$ を $X_k$ に対応する小区間とする．各 $i$ に対し $\gamma_k$ はちょうど一つの $\chi_{i,j_k}$ に含まれ，すなわち $\gamma_k \subset \chi_{i,j_k}$ である．このことを利用し，以下のように $M$ を定義する．
+\begin{equation}
+  M_{i,k} = \beta_{i,j_k}
+\end{equation}
+最後に前方にいる人を考慮する必要がある． $S$ の定義より $\rho_{i,1} = A_i$ であるため，各 $i$ に対しちょうど $A_i$ で始まる小区間 $\gamma_{k_i}$ が存在するので， $t_{i,k_i - 1}(X, M) = 0$ となるように $M$ の要素を設定する必要がある (ただし $t_{i,0}(M, X) = 0$ とする)．入力 $U$ に関わらず $u_{-1} = 0$ と定義しておくと，前方にいる歩行者に対し以下のように $M$ の要素を設定できる．
+\begin{equation}
+  M_{i,k} = \begin{cases}
+    -1 & k < k_i \\
+    \beta_{i,j_k} & k \geq k_i
+  \end{cases}
+\end{equation}
+上述同様に次の主張が自然に得られる．
+\begin{claim}\label{claim:fsabs-to-bs}
+  FSABS の入力 $(m, U, A$ に対し任意の実行可能な自由スケジュール $S$ 及び上記の方法で定義した $(M, X)$ を考える． $(M, X)$ に対し次が成り立つ．
+  \begin{itemize}
+  \item $(M, X)$ は \defref{bs-feasible-schedule} を満たし実行可能である．
+  \item $\tau(M, X) = \tau^\prime(S)$．
+  \end{itemize}
+  \hfill $\square$
+\end{claim}
+本節で定める FSABS の下界を示すのに\claimref{fsabs-to-bs} を用い，次節で与える解法アルゴリズムで\claimref{bs-to-fsabs} を用いる．
+
+以降は FSABS の下界について論じる． \lemref{lower-bound-bs} と同様に以下の補題で FSABS に対する下界を定義できる．
+\begin{lemma}\label{lemma:fsabs-lower-bound-absolute}
+  \begin{align}
+    \bar\tau^{\prime}(m, U, A) &\geq T^\prime(m, U, A) \\
+                      &\eqdef 1 - \frac{1}{m}\sum_{j = 1}^b (1 - u_j) - \frac{1}{m}\sum_{i = 1}^{m} A_i \\
+                      &= T(m, U) - \frac{1}{m}\sum_{i = 1}^{m} A_i
+  \end{align}
+\end{lemma}
+\begin{proof}
+  \lemref{lower-bound-bs} と同様に $T(m, U, A)$ は全員の移動時間の平均値を表すので，最大値が平均値以上であることから主張が成立する．
+\end{proof}
+% また，同じく \lemref{lower-bound-bs-bike} と同様に次の主張も容易に成り立つ．
+% \begin{lemma}\label{lemma:fsabs-lower-bound-bike}
+%   \begin{equation}
+%     \bar\tau^\prime(m, U, A) \geq u_b
+%   \end{equation}
+% \end{lemma}
+
+次に新しい形での下界を導入する．人を増やすことによって到着時間が早くなることは直感的に考えにくく， BS においては $T(m, U)$ の $m$ に対する単調増加性を示すことによってそれを形式的に証明できる．以下の補題では同じ考え方を FSABS について証明する．ただし $A_{:k}$ を $A_1$ から $A_k$ までの要素を含んだ配列とする．
+
+\begin{lemma}\label{lemma:fsabs-lower-bound-recursive}
+  $m > b$ とする．このとき
+  \begin{equation}
+    \bar\tau^{\prime}(m, U, A) \geq \bar\tau^\prime(m - 1, U, A_{:m-1})
+  \end{equation}
+\end{lemma}
+\begin{proof}
+  背理法のために $\bar\tau^{\prime}(m, U, A) < \bar\tau^\prime(m - 1, U, A_{:m-1})$ であると仮定し，$S$ を $(m, U, A)$ に対する最適な自由スケジュールとし， $(M, X)$ を\claimref{fsabs-to-bs} により得られた $S$ に対応するスケジュールとする．また，新たな記号を導入せずに本証明に限り $\tau^\prime(S)$ の代わりに $\tau^\prime(M, X, A)$ と書くことにする．
+
+  人 $m$ がはじめて自転車に乗る小区間を $i$ とし，その始点において人 $m$ が乗る自転車 $u_j$ に注目する．その自転車には 人 $\alpha_1$ が小区間 $i - 1$ で乗っており，人 $m$ が乗る前に小区間 $i$ の始点まで運んでくれたはずである．同様に人 $\alpha_1$ が小区間 $i$ で自転車に乗っていたと仮定する．そのとき，小区間 $i - 1$ でこの自転車に乗っていた人 $\alpha_2$ 存在する．これを繰り返すと，人 $\alpha_{k-1}$ が小区間 $i$ で乗っていたのと同じ自転車を小区間 $i - 1$ で乗っていた人 $\alpha_k$ が存在し，人 $\alpha_k$ は小区間 $i$ で歩いていたような $k$ が存在する．このとき，人 $m,\alpha_1,\ldots,\alpha_k$ の小区間 $i$ 以降のスケジュールを次のように変更する．
+  \begin{itemize}
+  \item 人 $\alpha_1$ は人 $m$ のスケジュールを実行する．
+    \item 人 $\alpha_i$ は人 $\alpha_{i-1}$ のスケジュールを実行する ($2 \leq i \leq k$)．
+    \item 人 $m$ は $A_m$ を小区間 $i$ の始点とした上で人 $\alpha_k$ のスケジュールを実行する．
+  \end{itemize}
+  このとき，人 $\alpha_1,\ldots,\alpha_k$ の新しいスケジュールはそれぞれ人 $m,\alpha_1,\ldots,\alpha_{k-1}$ の元のスケジュールより遅れることはない．また，人 $m$ は小区間 1 から $i - 1$ では自転車に乗っていないので， $A_m$ を小区間 $i$ の始点に動かしても自転車への影響を与えることはなく，時刻 0 で小区間 $i$ の始点を出発できるので，人 $m$ の新しいスケジュールは人 $\alpha_k$ の元スケジュールより遅れることはない．ここで，もし小区間 $i$ 以降で自転車よりも人が先に到着した場合はそこで待つこととする．\footnote{自由スケジュールの定義では「待つ」という行動は実現できないが， \claimref{fsabs-to-bs} と同様な方法で容易に追加すことるができる．}
+
+  このような再スケジューリングを繰り返すことにより，元々のスケジュールに要する時間を増やすことなく人 $m$ が初めて自転車に乗る小区間を到着点側へ動かすことができ，最終的には自転車に乗らないスケジュールを求めることができる．このときに得られる新たな初期位置 $A^\prime$ とスケジュール $(M^\prime, X^\prime)$ に対し $\tau^\prime(M^\prime, X^\prime, A^\prime) \leq \tau^\prime(M, X, A)$ であり，人 $m$ とその他のスケジュールを分けることにより \claimref{vertical-composition} から $\bar\tau^\prime(M^\prime, X^\prime, A^\prime) \geq \bar\tau^\prime(m - 1, U, A_{:m-1})$ が得られるので，
+  \begin{align}
+    \bar\tau^\prime(m, U, A) &= \tau^\prime(M, X, A) \\
+                             & \geq \tau^\prime(M^\prime, X^\prime, A) \\
+                             & \geq \bar\tau^\prime(m - 1, U, A_{:m-1})
+  \end{align}
+  より矛盾が生じる．
+
+%   なので人 $\alpha$ に引き続き $X_i$ で乗ってもらう．そうすることで自転車 $u_j$ は少なくともスケジュール通りに $X_i$ の終点に到着する (少なくともというのは，乗り換えの都合で $u_j$ が一定時間使用されない可能性があるのに対し，人 $\alpha$ がずっと乗ることでその時間が省けるということを意味する)． しかし，元々人 $\alpha$ は $X_i$ で $u_j$ を使わないことになっている．もし人 $\alpha$ が $X_i$ で $u_k$ の自転車に乗る予定だったならば，今度は同じ議論を $u_k$ を運んでくれた人に対して適用する．それを繰り返すと，いずれ $X_i$ を徒歩で移動する予定だった人 $\beta$ にたどり着く (なぜなら自転車の数が $b \leq m - 1$ であるからである)．その人は $X_{i - 1}$ で何かの自転車に乗っている前提だが，その自転車を引き続き使えば良い．
+
+% ここまでの処理を施すと，元々 $X_i$ の終点にとある時刻に到着すべきだった人達が人 $m$ 以外全員揃い，誰かが早く到着したとしてもそこで待てば良い\footnote{自由スケジュールの定義では「待つ」という行動は実現できないが， \claimref{fsabs-to-bs} と同様な方法で容易に追加すことるができる．}．ただし，元々と違うのは $X_{i + 1}$ 以降の役割が入れ替わっており，上記で言う人 $\alpha$ が人 $m$ の役割を果たすようになっている．「役割を果たす」というのは $X_{i + 1}$ 以降のスケジュールを入れ替え，人 $\alpha$ が人 $m$ のスケジュールを取れば良い． しかし人 $m$ を無視することによって一人役割が余っている人がいる．
+
+% 上記の議論では 「事前に」 という条件を付けているが，これはつまり自転車の運搬を遡るにつれて，ある自転車を運んだ人がその自転車を使う人よりも早く $X_i$ の始点に到着して， $X_i$ での移動を始めているという前提である．そうでないと自転車の使用者が自転車の到着よりも先に「乗る」ことになるが，それは実行可能解の定義に矛盾する．ここで元々 $X_i$ で歩行する予定だった上記の人 $\beta$ に注目する．人 $\beta$ は $X_i$ で現在自転車を使用し，違う人の役割を担っている．しかし元々のスケジュールでは歩行する予定で，少なくとも人 $m$ と同じタイミングか，それより早く $X_i$ の始点に到着し次の移動に移る．もし人 $\beta$ が人 $m$ と同時出発だったのであれば，人 $m$ は初期位置を変えずそのまま歩けば良い．他方でもし人 $m$ より早い場合は，人 $m$ の初期位置を適切にずらすことで，人 $m$ が元々の人 $\beta$ の到着時刻に $X_i$ の終点に到着するように変更できる．
+
+% この操作を施すことによって元々のスケジュールにかかる時間を保ちながら，人 $m$ が最初に自転車に乗る区間を前にずらすことができる．これを最悪 $n$ 回 (小区間の数) 繰り返せば，人 $m$ が自転車を使わないスケジュール $(M\prime, X\prime)$ が得られ， $\tau^\prime(M^\prime, X^\prime, A) \leq \tau^\prime(M, X, A) = \bar\tau^{\prime}(m, U, A)$ が満たされる．しかし人 $m$ が自転車を使わなければ， \propref{vertical-composition} と同様に $\tau^\prime(M^\prime, X^\prime, A) \geq \bar\tau^\prime(m - 1, U, A_{:m-1})$ が成り立つので
+% \begin{align}
+%   \bar\tau^\prime(m - 1, U, A_{:m-1}) &\leq \tau^\prime(M^\prime, X^\prime, A) \\
+%                                       &\leq \tau^\prime(M, X, A) \\
+%                                       &= \bar\tau^\prime(m, U, A)
+% \end{align}
+% より矛盾が生じる．
+\end{proof}
+この結果から以下の系が容易に得られる．
+\begin{corollary}\label{corollary:fsabs-lower-bound-bs}
+  $i \leq m - f$ に対し $A_i = 0$ とする．
+  \begin{equation}
+    \bar\tau^{\prime}(m, U, A) \geq \bar\tau(m - f, U)．
+  \end{equation}
+\end{corollary}
+
+以上の議論を次の定理にまとめる．
+\begin{theorem}\label{theorem:fsabs-lower-bound}
+  $(m, U, A)$ を FSABS の入力とする．また $f$ を前方にいる人の数とし， FSABS における最適な到着時間 $\bar\tau^\prime(m, U, A)$ は次の下界により制限される．
+  \begin{equation}
+    \bar\tau^\prime(m, U, A) \geq \max \begin{cases}
+      T^\prime(m, U, A) \\
+      T^\prime(m - 1, U, A_{:m-1}) \\
+      T^\prime(m - 2, U, A_{:m-2}) \\
+      \vdots \\
+      T^\prime(m - f + 1, U, A_{:m-f+1}) \\
+      \bar\tau(m - f, U)
+    \end{cases}
+  \end{equation}
+\end{theorem}
+\begin{proof}
+  \lemref{fsabs-lower-bound-recursive} に \lemref{fsabs-lower-bound-absolute} と \corref{fsabs-lower-bound-bs} を適用れば良い．
+\end{proof}

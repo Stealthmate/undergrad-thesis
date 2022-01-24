@@ -1,0 +1,73 @@
+本節では \textsc{Solve-FSABS} が必ず実行可能解を出力し，その実行可能解が必ず以前定義した下界を満たすため最適解であること，および $m$ に対する多項式時間で終了することを示す．
+
+まず最初に， 2 つのスケジュールを「横に組み合わせる」という操作を次の補題で定義する．
+
+\begin{lemma}\label{lemma:horizontal-composition}
+  任意の入力 $(m, U, A^{(1)})$ 及び $(m, U, A^{(2)})$ それぞれに対し自由スケジュール $S^{(1)}$ 及び $S^{(2)}$ を考える． $S^{(1)}$ に対し \defref{fsabs-feasible-schedule} の条件 1 以外が成り立つとし， $S^{(2)}$ が実行可能である (条件が全て成り立つ) とする．さらに，それぞれの自由スケジュールに対し以下の仮定が成り立つとする．
+  \begin{enumerate}
+  \item とある定数 $c$ 及び全ての $i$ に対し $t^\prime_i(L(S^{(1)}_i)) = c$ である． \label{hypothesis:same-arrival}
+  \item とある定数 $d$ 及び全ての $i$ に対し $\displaystyle A^{(1)}_i + L(S^{(1)}_i) = \frac{1}{1-d}(A^{(2)}_i - d)$ である．
+  \item $A^{(2)}_i < 0$ であるならば $\beta^{(2)}_{i,1} = \beta^{(1)}_{i,n_i^{(1)}}$であり，且つ $A^{(2)}$ に対し \condref{riders-order} が成り立つ． \label{hypothesis:same-bikes}
+  \item $A^{(2)}_i > 0$ であるならば全ての $j$ に対し $\beta^{(1)}_{i,j} = 0$．\label{hypothesis:no-forward-bikes}
+  \end{enumerate}
+  このとき，$S^{(3)} = S^{(1)} + S^{(2)}$ は $(m, U, A^{(1)})$ に対する実行可能解である．
+  \begin{equation}
+    (\alpha^{(3)}_{i,j}, \beta^{(3)}_{i,j}) = \begin{cases}
+      (\alpha^{(1)}_{i,j}, \beta^{(1)}_{i,j}) & j \leq n_i^{(1)} \\
+      (\frac{1}{1 - d}\alpha^{(2)}_{i,j^\prime}, \beta^{(2)}_{i,j^\prime}) & otherwise \\
+    \end{cases}
+  \end{equation}
+  ただし， $j^\prime = j - n_i^{(1)}$ とし， $S^{(3)}$ の各行の要素数を $n_i^{(3)} = n_i^{(1)} + n_i^{(2)}$ とする．
+\end{lemma}
+\begin{proof}
+  \defref{fsabs-feasible-schedule} の条件を順番に確認する． $S^{(3)}$ の各行に対し
+  \begin{align}
+    L(S^{(3)}_i) &= L(S^{(1)}_i) + \frac{1}{1 - d}L(S^{(2)}_i) \\
+                 &= \frac{1}{1 - d}(A^{(2)}_i - d + L(S^{(2)})) - A^{(1)}_i \\
+                 &= \frac{1}{1 - d}(1 - d) - A^{(1)}_i \\
+                 &= 1 - A^{(1)}
+  \end{align}
+  となるので \defref{fsabs-feasible-schedule} の条件 1 が満たされる． \hyporef{same-bikes} 及び \hyporef{no-forward-bikes} より $S^{(2)}$ における各自転車の初期値が後方ライダーもしくはグループの出発点に決まるので， $S^{(2)}$ の実行可能性より $S^{(3)}$ に対しても条件 2 が成り立つ．条件 3 はそれぞれのスケジュールで満たされているので確認すべきところは $S^{(1)}$ と $S^{(2)}$ が重複する区間である． $S^{(2)}$ は同時出発を前提に実行可能であるため， $S^{(3)}$ において $S^{(2)}$ の部分が始まるときに全員が同時出発をすれば $S^{(2)}$ の実行可能性より条件 3 が成り立ち， \hyporef{same-arrival} により同時出発が保証される．同様な議論をすることにより条件 4 も同じく満たされることが分かる．また，条件 5 は $S^{(2)}$ がそれを満たすことにより $S^{(3)}$ も必然的にそれを満たす．
+\end{proof}
+
+\textsc{Solve-FSABS} の出力を $S$ とすると， $S$ が \defref{fsabs-feasible-schedule} の条件を満たすことを示せば良い．このことを前方歩行者及び後方ライダーの数に対する帰納法を用いて示す．まず，前方も後方も人がいない場合の挙動を考える． $u_b \leq T(m, U)$，すなわち部分グループを考える必要がないのであれば， \lineref{toEnd} の処理より全ての人及び自転車が全区間を移動することとなる．その際の自由スケジュール $S$ は BS の解として与えられるので， \claimref{bs-to-fsabs} により $S$ は実行可能である．また，全員が同時に到着するため $A^{(1)}_i = 1$ となり，ライダーもいない状態であるため $S^{(1)}$ は空列のままとなる．したがってこのような入力に対し \textsc{Solve-FSABS} の出力は BS の解に対する自由スケジュールであり，実行可能である．ただし， $\tau^\prime(S) = \tau(M, X) = \bar\tau(m, U)$ であることから \corref{fsabs-lower-bound-bs} の下界を満たすことに注意する．
+
+他方で $u_b < T(m, U)$ の場合を考えると，\lineref{toEnd} 及び \lineref{find-schedule}の処理において $S$ の値は部分グループが到着点まで移動する時間の分のみとなり，余ったライダー達の残りの移動は指定されない．しかし， \lineref{check-only-riders} の条件が成立するので， $S^{(1)}$ の値にライダー達の到着点までの移動が格納される． $S$ と $S^{(1)}$ を合併させたときにそれぞれの人の移動は次のように与えられる．部分グループの移動を BS の解 $(M, X)$ から $S^{(sub)}$ に変換したとすると，\textsc{Solve-FSABS} の出力 $S^{(out)}$ は以下の要素から構成される．
+\begin{equation}
+  S^{(out)}_i = \begin{cases}
+    [(1, u_{b-i})] & i \leq r \\
+    S^{(sub)}_i & i > r
+  \end{cases}
+\end{equation}
+ライダーの分と部分グループの分に対し独立に \defref{fsabs-feasible-schedule} の条件が成り立つので， \propref{vertical-composition} より $S^{(out)}$ は実行可能であり．到着時間が $\tau^\prime(S^{(out)}) = \bar\tau(m, U) = u_b$ となり， \corref{fsabs-lower-bound-bs} が満たされる．
+
+続いて，あらゆる $m$ と $U$ に対し後方に $r$ 人以下のライダーと前方に $f$ 人以下の歩行者がいたときに \textsc{Solve-FSABS} の出力が実行可能だったと考え，ライダー一人及び自転車一台を追加したときの挙動を考える．ただし，追加する自転車は新たに最も遅い自転車であると仮定し， \condref{riders-order} より追加したライダーが一番後ろにいると仮定する．
+
+追加したライダーを人 1 とし，その位置を $A_1 < 0$ とする．もし現在の呼び出しでグループが人 1 と合流しなければ，グループ及び前方の歩行者のスケジュールは人 1 がいないときと同様になり，他方で人 1 のスケジュールには単なる一定区間の移動が追加される．移動が終わったあとにもしライダー以外全員到着している場合，人 1 の残りの移動は \lineref{move-riders} により与えられるが，他の人の移動は人 1 がいないときと変わらない．すなわち，他の人達に関して \defref{fsabs-feasible-schedule} は帰納法の仮定より満たされている．しかし人 1 と他の人がお互いの自転車を共有する機会が一切ないので人 1 に関しても \defref{fsabs-feasible-schedule} の条件 2, 3, 4 が満たされ，また移動の与え方から 1 と 5 も自明に満たされる．したがって，この場合の出力は実行可能であり，到着時間が $\tau^\prime(S) = u_{b + 1}(1 - A_1)$ となる．一方でもしライダー以外にもまだ到着していない人がいるならば再帰的な呼び出しによりスケジュール $S^{(2)}$ が得られるので， $S + S^{(2)}$ が実行可能であることを確認しなければならない．しかし， $A^{(2)}$ の計算方法より \lemref{horizontal-composition} が成立し， $S^{(out)}$ は実行可能解となる．同様に，人 1 がグループと合流した場合も， $S$ と $S^{(2)}$ に対し \lemref{horizontal-composition} の条件が成り立つので $S^{(out)} = S + S^{(2)}$ が実行可能解となる．なお，ライダーが一人でも現れたら，それ以降ライダーが増えることがないことに注意する．
+
+次に，あらゆる $m$ と $U$ に対し後方に $r$ 人以下のライダーと前方に $f$ 人以下の歩行者がいたときに \textsc{Solve-FSABS} の出力が実行可能だったと考え，前方に歩行者を一人追加したときの挙動を考える．ただし，追加する歩行者を人 $m + 1$ とし，新たに最も到着点に近い位置にあるとする．もし現在の呼び出しでその人がグループと合流せずにそのまま到着点に達したら，その人のスケジュールが他の人と独立し実行可能となるため \propref{vertical-composition} より全体のスケジュールも実行可能となる．また到着点に到達しなかった場合及びグループと合流した場合に，再帰的な処理によってライダーが減るか，前方の歩行者が減るかのいずれの状態で再帰的な呼び出しが発生するが，上記同様に \lemref{horizontal-composition} より最終的なスケジュールが実行可能となる．
+
+上述の結果を以下の定理にまとめる．
+
+\begin{theorem}\label{theorem:solve-fsabs-is-feasible}
+  \textsc{Solve-FSABS} は常に実行可能解を出力する．\hfill $\square$
+\end{theorem}
+
+
+今度は出力が実行可能であることを踏まえ， \textsc{Solve-FSABS} が最適解を出力することを示す．まず，自由スケジュールの定義上人が常に前進するので，最後に到着する人が誰かにより下界のいずれかが満たされることを示せば良い．もし前方の歩行者の一部が先に到着すれば，その人達のスケジュールが独立となるので， \propref{vertical-composition} より \lemref{fsabs-lower-bound-recursive} が満たされることが分かる．したがって，先に到着した人達を除いた入力に対し下界を考えれば良い． \textsc{Solve-FSABS} の挙動では上記の場合を除いて，ライダーが最後に到着するか，グループと合流しグループが同時に到着するかのいずれかが起こる．もしライダーが最後だった場合， \condref{riders-order} より $u_b$ に乗っている人が最後になるため，全体の到着時間は $\tau^\prime(S^{(out)}) = u_b = \bar\tau(m - f, U)$ となる．ただし $f$ は元々前方にいた人数を指す．他方で全員が同時に到着すれば \lemref{fsabs-lower-bound-absolute} より $\tau^\prime(S^{(out)}) = T^\prime(m - f^\prime, U, A^\prime)$ となる．ただし $f^\prime$ は先に到着できた歩行者の人数を指し， $A^{\prime}$ は元々の入力 $A$ から先に到着する前方歩行者のデータを取り除いたものである．この議論を以下の定理にまとめる．
+
+\begin{theorem}
+  入力 $(m, U, A)$ に対し \textsc{Solve-FSABS} は最適解を出力する．
+\end{theorem}
+\begin{proof}
+  \textsc{Solve-FSABS} が出力する自由スケジュールを $S$ とする． \thmref{solve-fsabs-is-feasible} より $S$ は実行可能であり，上述の議論より以下を満たすため， \thmref{fsabs-lower-bound} より最適である．
+  \begin{equation}
+    \tau^\prime(S) = \max \begin{cases}
+      \bar\tau(m - f, U) \\
+      T^\prime(m - f^\prime, U, A^\prime)
+    \end{cases}
+  \end{equation}
+  ただし， $f^\prime$ は先に到着できる前方の人数を指し， $A^\prime$ はそれらの分を取り除いた入力とする．
+\end{proof}
+
+最後に， \textsc{Solve-FSABS} の時間計算量について簡単に述べる． \algref{solve-fsabs} においては再帰呼び出しを除き，全ての処理が定数時間か $m$ に対する多項式時間で終了する．また，再帰自体は最大でも $O(m)$ 回しか起こらないので，全体の時間計算量は $m$ に対する多項式時間である．

@@ -1,0 +1,137 @@
+本節では FSABS を解くアルゴリズム \textsc{Solve-FSABS} を定義し，その計算量と正当性について論じる．まず，アルゴリズムの挙動を \algref{solve-fsabs} に擬似コードで示した．
+\IncMargin{0.8em}
+\begin{algorithm}
+  \caption{\textsc{Solve-FSABS}}\label{alg:solve-fsabs}
+  \SetKwInOut{Input}{input}\SetKwInOut{Output}{output}
+  \SetKw{Not}{not}
+  \SetKw{In}{in}
+  \SetKw{And}{and}
+  \SetKw{Continue}{continue}
+  \SetKwProg{Fn}{Function}{:}{}
+  \SetKwFunction{FToNextW}{\textsc{ToNextW}}
+  \SetKwFunction{FToNextR}{\textsc{ToNextR}}
+  \SetKwFunction{FToEnd}{\textsc{ToEnd}}
+  \SetKwFunction{FMove}{\textsc{Move}}
+  \SetKwFunction{FSolveFSABS}{\textsc{Solve-FSABS}}
+  \SetKwFunction{FSubgroup}{\textsc{Subgroup}}
+  \SetKwFunction{FMerge}{\textsc{Merge}}
+  \SetKwFunction{FApplyMovement}{\textsc{ApplyMovement}}
+  \SetKwFunction{FOnlyRidersLeft}{\textsc{OnlyRidersLeft}}
+  \SetKwFunction{FMoveRiders}{\textsc{MoveRiders}}
+  \SetKwFunction{FScalePositions}{\textsc{ScalePositions}}
+  \SetKwFunction{FScaleSchedule}{\textsc{ScaleSchedule}}
+  \SetInd{0.25em}{0.25em}
+
+  \Input{自然数 $m$\\
+    昇順に並べた列 $U \in (0, 1)^{b}$\\
+    昇順に並べた列 $A \in (-\infty, 1)^{m}$}
+  \Output{自由スケジュール $S$}
+  \If{$\forall i,\; A_i = 1$}{
+    \Return []\;
+  }
+  $r \gets$ 後方にいるライダーの数\;
+  $f \gets$ 前方にいる歩行者の数\;
+  \If{$u_b > T(m - f - r, U_{:b-r})$}{\label{alg:line:if-subgroup}
+    $m_k \gets$ \FSubgroup{$m$, $U_{:b-r}$}\; \label{alg:line:subgroup}
+    $r \gets r + m - m_k$\;
+  }
+  $(t_1, d_1) \gets (\infty, \infty)$\;
+  $(t_2, d_2) \gets (\infty, \infty)$\;
+  \If{$f > 0$} {
+    $(t_1, d_1) \gets$ \FToNextW{$m$, $U$, $A$, $r$}\; \label{alg:line:toNextW}
+  }
+  \Else {
+    $(t_1, d_1) \gets$ \FToEnd{$m$, $U$, $A$, $r$}\; \label{alg:line:toEnd}
+  }
+  groupT $\gets T(m - f - r, U_{:b-r})$\;
+  \If{$r > 0$ \And $u_{b - r} <$ \upshape{groupT}}{
+    $(t_2, d_2) \gets$ \FToNextR{$m$, $U$, $A$, $r$}\; \label{alg:line:toNextR}
+  }
+  $(t, d) \gets$ (NIL, NIL)\;
+  \If{$t_2 < t_1$}{
+    $(t, d) \gets (t_2, d_2)$\;
+  }
+  \Else{
+    $(t, d) \gets (t_1, d_1)$\;
+  }
+  $S \gets$ \FMove{$t$, $m$, $U$, $A$}\; \label{alg:line:find-schedule}
+  $A^{(1)} \gets$ \FApplyMovement{$S$, $A$}\; \label{alg:line:apply-movement}
+  $S^{(1)} \gets$ []\;
+  \If{$\forall i > r \pause A^{(1)}_i = 1$}{ \label{alg:line:check-only-riders}
+    $S^{(1)} \gets$ \FMoveRiders{$m$, $U$, $A^{(1)}$}\; \label{alg:line:move-riders}
+  }
+  \ElseIf{$d < 1$}{ \label{alg:line:check-not-arrived-yet}
+    $A^{(2)} \gets \frac{A^{(1)} - d}{1 - d}$\;
+    $S^{(2)} \gets$ \FSolveFSABS{$m$, $U$, $A^{(2)}$}\; \label{alg:line:find-recursive-schedule}
+    $S^{(1)} \gets$ \FScaleSchedule{$S^{(2)}$, $1 - d$}\; \label{alg:line:rescale-recursive}
+  }
+  \Return{$S + S^{(1)}$}\; \label{alg:line:merge-schedules}
+\end{algorithm}
+\DecMargin{0.8em}
+
+\textsc{Solve-FSABS} の挙動を説明する前にいくつかの補助的な概念を導入する．
+\begin{enumerate}
+\item グループ：出発点にいる人と自転車のまとまり．グループの移動は BS のインスタンスとして計算することができる．グループの人に対し $A_i = 0$ が成り立つ．
+\item 後方ライダー：出発点より後ろにおり，ずっと同じ自転車に乗っている人．ライダーに対し $A_i < 0$ が成り立つ．
+\item 前方歩行者：出発点より前におり，ずっと歩いている人．歩行者に対し $A_i > 0$ が成り立つ．
+\end{enumerate}
+これらを踏まえた上で \textsc{Solve-FSABS} の入力に対する次の制約を述べる．
+\begin{condition}\label{condition:riders-order}
+  ライダーとなる ($A_i < 0$ となる) 人 $i$ は $u_{b - i}$ の自転車を使っていなければならない．つまり，ライダーとなる人達は常に一番遅い自転車に乗っており，さらに遅ければ遅いほど後ろにいなければならない．
+\end{condition}
+\textsc{Solve-FSABS} は再帰的なアルゴリズムであるが，呼び出すときには各人が必ず上記のいずれかの分類に含まれる．なお，最初に呼び出すときにはライダーがいないことに注意する．
+
+続いて \textsc{Solve-FSABS} の概ねの挙動を説明する．
+\begin{enumerate}
+\item 全員を前進させ，出発点にいるグループが後ろから追いつてくるライダーもしくは前方にいる歩行者のいずれか早い方と合流する点までの距離と移動スケジュールを計算する．なお，もし到着点までに合流できない場合は全区間を移動させる．
+\item グループが動いた時間だけ他のライダーや歩行者を動かす．
+\item 合流地点を新たな出発点として考え，後方ライダーや前方歩行者の相対的な位置を再計算した上で再帰的に \textsc{Solve-FSABS} を呼び出し FSABS を解く．この際，合流によって後方ライダもしくは前方歩行者が少なくとも一人グループに吸収されるので入力がより簡単になることに注意する．
+\item 新たに解いた問題のスケジュールを最初に計算したスケジュールと合併させる．
+\end{enumerate}
+
+最初にアルゴリズムを呼び出すときにライダーがいないが，ステップ 1 ではライダーを考慮する必要がある． \textsc{Solve-FSABS} は再帰的なアルゴリズムなので，ライダーがどのように登場するかを後ほどの議論に任せ，以降ではライダーがいる前提での挙動について論じる．
+
+ステップ 1 の通り，グループを移動させ，ライダーもしくは歩行者と合流させたい．なお，グループに入る自転車はライダーの自転車を含まないので， \condref{riders-order} を活用しグループの自転車を列 $U_{:b-r}$ として表すことができることに注意する． \lemref{fsabs-lower-bound-absolute} を満たすためには到着点に到達していない人が全員常に動いていなければならないので，合流する時にグループも歩行者 (ライダー) も同時に合流点に到着する必要がある．しかし，グループが持っている自転車の速度によっては，一定区間動かしたときに全員が同時に到着しない場合があり得る．幸いなことに，そのような場合には \lemref{bs-subgroup} より同時到着を実現できる部分グループの存在が保証されるので，その部分グループを新たに「グループ」として考え，余った人と自転車をライダーとして考える．ただしその際に入力変数 $r$ を変更する必要があることに注意する．アルゴリズムの \lineref{if-subgroup} の条件分岐がこの部分に対応する．
+
+部分グループの採用による調整を行った後，次に合流できる人を定める．まず，もし先に歩行者がまだいるならば，その歩行者と合流する点を求める．上述の通り合流点にグループも歩行者も同時に到着しなければならないので，合流点を $x_1$ とするとグループも歩行者もそれぞれ同じ時間でそこ到達しなければならない． \claimref{bs-scalable} より $\bar\tau(m - f - r, U) = T(m - f - r, U)$ をグループの速度として考えることができるので，出発点に一番近い歩行者を人 $p$ とするとそれぞれが合流点までの移動にかかる時間を以下の式で表すことができる．
+\begin{equation}
+  t_1 = (x_1 - A_p) \times 1 = x_1T(m - f - r, U_{:b-r})
+\end{equation}
+$x_1$ について解くと合流点が求まる．
+\begin{equation}
+  x_1 = \frac{A_p}{1 - T(m - f - r, U_{:b-r})}
+\end{equation}
+もし $x_1 \geq 1$，つまり合流点が到着点以降になるのであれば， $x_1 = 1$ と置いて到着点までの移動だけを考える．この実際の移動距離を $d_1 = \min \{x_1, 1\}$ と置く．以上の計算を行うのが \lineref{toNextW} の関数 \textsc{toNextW} の役割である．他方でもし先に歩行者がいなければ， $x_1 = 1$ の場合と同様に計算すれば良い．その場合を賄うのが \lineref{toEnd} の関数 \textsc{toEnd} の役割である．
+
+次に，もし後ろにライダーがいて，且つライダーがグループより速く動くのであれば，ライダーと先に合流できないかを調べる必要がある．その際には上記と同様な方法で合流時間
+\begin{equation}
+  t_2 = (x_2 - A_r)u_{b - r} = x_2T(m - f - r, U_{:b-r})
+\end{equation}
+から合流点 $x_2$ について解くことで値が求まる．
+\begin{equation}
+  x_2 = \frac{A_ru_{b - r}}{u_{b-r} - T(m - f - r, U_{:b-r})}
+\end{equation}
+この部分が \lineref{toNextR} の関数 \textsc{toNextR} の役割である．最後に，ライダーと先に合流するか，歩行者と先に合流するか，両方よりも先に到着点に到達するかを時間的に比較した上で，一番早くできる行動を採用して，それにかかる移動を時間 $t$ 及び距離 $d$ で表す．
+
+移動距離を決めてから次にその移動を実行するためのスケジュール $S$ を \lineref{find-schedule} で求める．手続き \textsc{Move} は各人 $i$ に対し次のようなスケジュールを構成し，それらをまとめたものを返す．
+\begin{itemize}
+\item 人 $i$ が既に到着点にいる ($A_i = 1$) ならば，その人の自由スケジュールを空列とする．
+\item 人 $i$ がライダー ($0 < i \leq r$) ならば，その人の自由スケジュールを一つの順序対 $(tu_{b-i}, b-i)$ からなる配列とする．
+\item 人 $i$ がグループの人 ($r < i < m - f$) ならば，グループ全体のスケジュール $(M, X)$ を BS の解として求め， \claimref{bs-scalable} を用いて距離 $\frac{t}{T(m - f - r, U_{:b-r})}$ に合わせた上で， \claimref{bs-to-fsabs} により与えられる  $(M, X)$ に相当する自由スケジュール $S^\prime$ を組み立て，人 $i$ の自由スケジュールを $S^\prime_i$ とする．
+\item 人 $i$ が歩行者 ($m - f < i < m$) ならば，その人の自由スケジュールを一つの順序対 $(\min \{ 1 - A_i, t \}, 0)$ からなる配列とする．
+\end{itemize}
+時間 $t$ 分の移動スケジュールを求めた上で，その移動を $A$ に対する操作として施し， $A$ の値にそれぞれの人の移動距離を加算したものを $A^{(1)}$ に格納する (\lineref{apply-movement})．
+
+次に移動後の状態を改めて分析した上で次の挙動を決める．もしグループの移動距離が全区間ならば，前方の歩行者とグループが必ず到着点に到達したと解釈できる．その際，$i > r$ に対し $A^{(1)}_i$ の値は 1 となる．しかし，もしライダーがいる場合にはライダーがまだ到着点に到達していない可能性があり，ライダーのスケジュールにそれぞれが到着するまでの分を追加しなければならない．この場合に対応するのが \lineref{check-only-riders} の条件分岐である．
+
+他方で，もしグループが全区間を移動していないのであれば，少なくともグループのメンバーはまだ到着点に到達していない．その際，全員の相対位置をスケールした上で，残りの区間に対し新たに \textsc{Solve-FSABS} を用いて問題を解く．ただし，相対位置を計算するときには以下の式を用いる．
+\begin{equation}
+  A^{(2)}_i = \frac{A^{(1)}_i - d}{1 - d}
+\end{equation}
+この処理を施し， \textsc{Solve-FSABS} を再び呼び出した結果が自由スケジュール $S^{(2)}$ となり，アルゴリズムが正当であると仮定すると $S^{(2)}$ の移動を施せば全員が到着点に到達する．しかし， $S^{(2)}$ では移動区間を $[0, 1]$ としているので，元の問題に適用するには全員の移動を区間 $[d, 1 -d]$ に合うようにスケールしなければならない．すなわち， $S^{(2)}$ の全ての順序対に対し以下の順序対
+\begin{equation}
+  (\alpha^{(1)}_{i, j}, \beta^{(1)}_{i,j}) = ((1 - d)\alpha^{(2)}_{i,j}, \beta^{(1)}_{i,j})
+\end{equation}
+を求め，それらを $S^{(1)}$ にまとめる．この処理が \lineref{check-not-arrived-yet} の条件分岐に相当する．
+
+最後に，合流までのスケジュール $S$ と合流後のスケジュール $S^{(1)}$ を組み合わせたものを返せば良い．ただし，組み合わせるとはそれぞれの $i$ に対し配列 $S_i$ 及び $S^{(1)}_i$ を連結させる処理とする．

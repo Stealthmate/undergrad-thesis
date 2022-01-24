@@ -1,0 +1,82 @@
+自転車共有問題を次のように定義する\parencite{czyzowicz}．まず，入力として与えられる情報は
+\begin{itemize}
+\item $m \in \N$: 人の数，
+\item $U \in (0, 1)^{b}$: それぞれの自転車の速度が $v_i$ であるとき， $u_i = \frac{1}{v_i}$ をその逆数として配列にまとめたもの．
+\end{itemize}
+ここで $b$ は自転車の台数である．さらに， $b < m$ となるような入力のみを考えることとし，  $U$ は昇順にソートされているとする．
+
+はじめに全ての人と自転車が点 0 (以降\emphasize{出発点}) に配置されているとする．人は速度 1 で\emphasize{歩く}か，とある自転車 $i$ に乗って速度 $v_i$ で移動することができる．自転車には同時に一人しか乗ることができず，その人が自転車に乗るためには人も自転車も同時に同じ場所にいなければならない．さらに，人は任意の時点で自転車を降りることができる．また，人が乗っていない自転車は移動することができない．
+
+BS の目標は全ての人及び自転車が点 1 (以降\emphasize{到着点}) まで最も早く移動できるような\emphasize{スケジュール}を組み立てることである．なお自転車も到着地点まで移動しなければならないことに注意する．自転車が人より少ないので，最適なスケジュールを求めるのは自明ではなく，人がどうにか自転車をうまく共有するように設計しなければならない． \textcite{czyzowicz} により提案されたアルゴリズムはそのような特別な共有パターンを求める．
+
+自転車の共有という概念は行列として表すことができる．区間 $[0, 1]$ を $n$ 個の小区間 $X_j$ に分け，人 $i$ が小区間 $j$ で乗った自転車の番号を $M_{i,j}$ と置き， $M = \big(M_{i,j}\big)$ をスケジュール行列と呼ぶ．ただし，人 $i$ が徒歩で移動した小区間 $j$ では $M_{i,j} = 0$ とする．しかし $M$ は実際の計算では少し使いづらいので，自転車の番号ではなく速度の逆数を格納した行列 $\widetilde{M}_{i, j} = u_{M_{i, j}}$ も定義しておく．それぞれの小区間の長さをベクトル $X \in [0, 1]^{n}$ にまとめ，順序対 $(X, M)$ をスケジュールと呼ぶ．さらに，スケジュールに対し以下の量を定義する．
+\begin{itemize}
+  \item 人 $i$ が小区間 $j$ の終点に到着するのに必要な時間
+  \[
+    t_{i,j}(X, M) = \sum_{k = 1}^{k \leq j} X_j \widetilde M_{i, j}．
+  \]
+\item 人 $i$ が到着点に到着するのに必要な時間
+  \[
+    t_i(X, M) = t_{i,n}(X, M) = \sum_{k = 1}^{k \leq n} X_j \widetilde M_{i, j}．
+  \]
+\item 全員が到着点に到着するのに必要な時間
+  \[
+    \tau(X, M) = \max_{i} t_i(X, M)．
+  \]
+\end{itemize}
+また，特定のスケジュールに関係なく，とある BS の入力に対し最適な時間を $\bar\tau(m, U)$ として表す．
+
+あらゆる $(M, X)$ の中で，次の条件を満たすものを実行可能なスケジュールという．
+
+\begin{definition}\label{definition:bs-feasible-schedule}
+  $(M, X)$ BS において実行可能解となるときかつそのときに限り，以下が満たされる．
+  \begin{enumerate}
+  \item $M_{i, j} \neq 0 \implies \exists i^\prime \st M_{i^\prime, j - 1} = M_{i, j}$．
+  \item $M_{i, j} \neq 0 \implies \forall i^\prime \neq i \pause M_{i^\prime, j} \neq M_{i, j}$．
+  \item $M_{i, j} = M_{i^\prime, j - 1} \neq 0 \implies t_{i^\prime,j-1} \leq t_{i,j-1}$．
+  \item $1 \leq \forall j \leq b\pause \exists i \st M_{i,n} = j$．
+  \end{enumerate}
+\end{definition}
+
+これらの定義を用いることで $M$ に対する線形計画法で $X$ と $\tau$ を求めることができる．したがって BS の鍵となるのは $M$ の計算である． \textcite{czyzowicz} は $\bar\tau$ の下界を 2 つ示し，いずれかが必ず満たされるようなスケジュール行列の計算方法を示した．それぞれの下界は以下の補題として定義する．
+
+\begin{lemma}\label{lemma:lower-bound-bs-bike}
+  \begin{equation}
+    \bar\tau(m, U) \geq u_b.
+  \end{equation}
+\end{lemma}
+\begin{proof}
+  自転車も到着点まで移動しなければならないが，それぞれの移動速度が決まってあるので一番遅い自転車が全区間を移動する時間は必ずかかる．
+\end{proof}
+
+\begin{lemma}\label{lemma:lower-bound-bs}
+  \begin{equation}
+    \bar\tau(m, U) \geq T(m, U) \eqdef 1 - \frac{1}{m}\sum_{j = 1}^b(1 - u_j)
+  \end{equation}
+\end{lemma}
+\begin{proof}
+  各人が止まることなく常に歩いているもしくは自転車に乗って動いていると仮定すれば， $T(m, U)$ は全員の移動時間の平均値を表す．他方最適なスケジュール $(M, X)$ に対し $\bar\tau(m, U) = \tau(M, X) = \max_i t_i$ となるのが，最大値が平均値以上でなければならないことから主張が成り立つ．
+\end{proof}
+\lemref{lower-bound-bs} では人が常に動いている仮定が必要であるが，\textcite{czyzowicz} は待機を許したとしてもより早い到着時間が得られないことを示している．以下の主張は簡単であるが，解法アルゴリズムに対し重要なので敢えて述べておく．
+
+\begin{corollary}\label{corollary:lower-bound-bs-equality}
+  全員が同時に到着するときかつそのときに限り， $\bar\tau(m, U) = T(m, U)$．
+\end{corollary}
+
+BS を解くアルゴリズムは \lemref{lower-bound-bs} 及び \corref{lower-bound-bs-equality} を活用したものである．その概ねの挙動を以下に示す．
+
+$u_b \leq T(m, U)$ の場合，一部の人に順番に先に自転車に乗ってもらって途中で降りて歩いてもらう．なお空間的に自転車の位置が自転車の速さと同順であり，速い自転車が先にある状態を維持し，自転車を降りた人達が歩行するときに同時に同じところを歩く状態を作る．全員が一回自転車に乗ったあと，最後に乗っている人が先の歩行者に追いついた時点でそのグループに加わり，次の人が追いつくまでの区間では歩行者と追いついた自転車一台でまたグループとして動いてもらうことを考える．これはつまりより小さい入力に対して同じ問題を解くことを意味する．なおグループの動きの性質として，全員が同じ場所から同時出発をすると，次に人が追いついたときにまた全員が同じときに同じ場所にいることが保証される．この性質を用いて後ろの人と自転車をどんどん吸収していき，一番遅い自転車に乗っている一番後ろの人がちょうど到着点に他の人と合流するようなスケジュールを組むことで $\bar\tau(m, U) = T(m, U)$ を満たすスケジュールを得ることができる．
+
+一方 $T(m, U) < u_b$ の場合，次の性質を活かすことができる．
+\begin{lemma} (\textcite{czyzowicz})\label{lemma:bs-subgroup}
+  $(m, U)$ を BS の入力とする． $u_b \geq T(m, U)$ であるならば式~(\ref{eq:eq1}) を満たす $k$ が存在する．ただし， $U_k = [u_1, u_2, \ldots, u_{k}]$ 及び $m_k = m - b + k$ であるとする．
+  \begin{equation}
+    u_k \leq T(m_k, U_k) \leq u_b \label{eq:eq1}
+  \end{equation}
+\end{lemma}
+このとき，上記の性質により与えられるより小さいグループを動かし，余った自転車は余った人に全区間を走ってもらうことで $u_b$ に乗っている人が最後に到着するようなスケジュールを作ることができ， $\bar\tau(m, U) = u_b$ となる．
+
+最後に， BS の解は任意の区間長に適用できることを明記しておく．以下の補題は \textcite{czyzowicz} らの主張を簡略化したものである．
+\begin{claim}\label{claim:bs-scalable}
+  BS の入力 $(m, U)$ に対し $(M, X)$ を実行可能解とする．任意の区間 $[0, a]$ に対し BS を定義したとき，同じ入力に対し $(M, aX)$ が実行可能解となり， $\tau(M, aX) = a\tau(M, X)$．\hfill $\square$
+\end{claim}

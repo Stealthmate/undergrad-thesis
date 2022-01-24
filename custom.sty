@@ -1,0 +1,37 @@
+\ProvidesPackage{custom}
+
+\RequirePackage{vals-math}
+\RequirePackage{vals-common-jp}
+\RequirePackage{vals-theorems-jp}
+
+\RequirePackage{amsmath}
+\RequirePackage{amsfonts}
+\RequirePackage{amsthm}
+\RequirePackage[backend=biber]{biblatex}
+\RequirePackage[boxruled,linesnumbered,noend]{algorithm2e}
+\RequirePackage[toc,page]{appendix}
+\RequirePackage{tabularx}
+\RequirePackage{lipsum}
+\RequirePackage{environ}
+\RequirePackage{color}
+
+%% Sections etc.
+\newcommand\algref[1]{アルゴリズム \ref{alg:#1}}
+\newcommand\lineref[1]{第 \ref{alg:line:#1} 行}
+\newcommand\hyporef[1]{仮定 \ref{hypothesis:#1}}
+\newcommand\secref[1]{第 \ref{section:#1} 章}
+
+%% Citations
+\DefineBibliographyStrings{english}{andothers={ら}}
+
+%% Algorithm
+\let\oldnl\nl% Store \nl in \oldnl
+\newcommand\nonl{%
+  \renewcommand{\nl}{\let\nl\oldnl}}% Remove line number for one line
+
+%% Math
+\def\N{\mathbb{N}}
+\def\st{\,s.t.\,}
+\def\pause{,\,}
+\def\phi{\varphi}
+\def\eqdef{\overset{def}{=}}
