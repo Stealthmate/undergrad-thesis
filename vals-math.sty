@@ -1,0 +1,58 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{vals-math}[2022/01/24 Vals Math]
+
+% Requirements
+\RequirePackage{amsmath}
+\RequirePackage{amsfonts}
+\RequirePackage{amsthm}
+\RequirePackage{mathtools}
+\RequirePackage{upgreek}
+
+
+% Logic
+\def\st{\;s.t.\;}
+\def\stbar{\;|\;}
+\def\iffdef{\overset{def}{\iff}}
+
+% Set Theory
+\def\N{\mathbb{N}}
+\def\Z{\mathbb{Z}}
+\def\Q{\mathbb{Q}}
+\def\R{\mathbb{R}}
+\newcommand{\setbuilderseparator}{:}
+\newcommand\mapdef[3]{{#1}:{#2}\to{} {#3}}
+\newcommand\inprod[2]{\langle{} {#1}, {#2} \rangle{}}
+\newcommand\setbuild[2]{\{\,{#1}\,\setbuilderseparator\,{#2}\,\}}
+
+% Group Theory
+\def\sgrp{\subset}
+\def\nsgrp{\triangleleft}
+\newcommand\qgrp[2]{{#1}/{#2}}
+\newcommand\Ker[1]{\operatorname{Ker} ({#1})}
+\renewcommand\Im[1]{\operatorname{Im} ({#1})}
+\newcommand\Aut[1]{\operatorname{Aut} ({#1})}
+\def\iso{\cong}
+\newcommand\Zentrum[1]{\operatorname{Z} ({#1})}
+\newcommand\eqclass[1]{[#1]}
+\newcommand\order[1]{[{#1}]}
+\newcommand\Zq[1]{\qgrp{\Z}{{#1}\Z}}
+\def\GL{\textup{GL}}
+\def\SL{\textup{SL}}
+\newcommand\Sg[1]{\mathfrak{G}_{#1}}
+\def\F{\mathbb{F}}
+
+% Suffixes
+\def\inv{^{-1}}
+\def\T{^{T}}
+
+% Other
+\renewcommand\gcd[2]{\operatorname{gcd} ({#1}, {#2})}
+\renewcommand\det[1]{\operatorname{det} ({#1})}
+\newcommand\sgn[1]{\operatorname{sgn} ({#1})}
+\newcommand\mathnote[1]{(\text{#1})}
+\DeclareMathOperator*{\argmax}{argmax}
+\DeclareMathOperator*{\argmin}{argmin}
+
+% \DeclareOption{varphi}{%
+%   \def\phi\varphi
+% }
