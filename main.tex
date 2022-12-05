@@ -9,14 +9,14 @@
 %%%%%%%%%
 \title{前方に人がいることを許した自転車共有問題}
 \author{ハララノフ ヴァレリ}
-% \date{2022-02-10}
 \addbibresource{refs.bib}
+\addbibresource{refs-dicts.bib}
 %%%%%%%%%
 
-\papercode{ICS-0XM-XXX}
+\papercode{ICS-22B-818}
 \affiliation{工学部情報工学科}
-\date{令和3年2月10日提出}
-\supervisor{山田 敏規教授}
+\date{令和4年2月14日提出}
+\supervisor{山田 敏規准教授}
 \labname{山田研究室}
 \studentID{18TI018}
 
@@ -24,26 +24,59 @@
 
 \maketitle
 
-\chapter{はじめに}
-\input{introduction}
-\chapter{自転車共有問題 (BS)}\label{section:bs}
-\input{section-bs}
-\chapter{前方に人がいることを許した自転車共有問題 (FSABS) }\label{section:fsabs}
+\setcounter{page}{1}
+\chapter*{概要}
+\pagenumbering{roman} % 消さない
+\addcontentsline{toc}{chapter}{概要} %消さない
+\input{chapter-abstract/main}
+
+\chapter*{謝辞}
+\addcontentsline{toc}{chapter}{謝辞} % 消さない
+\input{chapter-acknowledgements/main}
+
+
+\tableofcontents % 目次生成
+% \listoffigures % 図目次生成
+% \addcontentsline{toc}{chapter}{図目次}
+% \listoftables % 表目次生成
+% \addcontentsline{toc}{chapter}{表目次}
+
+\chapter{はじめに}\label{chapter:introduction}
+\pagenumbering{arabic} %消さないこと
+\setcounter{page}{1}   %消さないこと
+% \section{背景及び関連研究}
+\input{chapter-introduction/section-background}
+% \section{本論文の構成及び結果}
+% \input{chapter-introduction/section-outline}
+
+\chapter{自転車共有問題 (BS)}\label{chapter:bs}
+\input{chapter-bs/main}
+\chapter{前方に人がいることを許した自転車共有問題 (FSABS) }\label{chapter:fsabs}
 \section{問題設定と定義}
-\input{section-fsabs/defs}
-\section{preliminary observations {\color{red}修正が必要}}
-\input{section-fsabs/preliminary}
+\input{chapter-fsabs/defs}
+\section{予備考察}
+\input{chapter-fsabs/preliminary}
 \section{FSABS を解くアルゴリズム \textsc{Solve-FSABS}}
-\input{section-fsabs/algorithm}
+\input{chapter-fsabs/algorithm}
 \section{\textsc{Solve-FSABS} の正当性及び計算時間}
-\input{section-fsabs/correctness}
-\chapter{結論と今後の課題}\label{section:conclusion}
-\input{section-conclusion}
+\input{chapter-fsabs/correctness}
+\chapter{結論と今後の課題}\label{chapter:conclusion}
+\input{chapter-conclusion/main}
 
 \renewcommand{\refname}{参考文献}
 \nocite{*}
-\printbibliography
+\printbibliography[title=参考文献]
 
+% \appendix
+% \chapter{▽△▽△}
+% \section{ほげほげ}
+% \section{ほりゃほりゃ}
+% \chapter{▽△▽△}
+% \section{ほげほげ}
+% \section{ほりゃほりゃ}
+
+% 索引． mendexかmkindexで作成
+\printindex
 % \begin{appendices}
 % \section{$S$ から $(M, X)$ を生成する手続き}
 % \label{appendix:s-to-mx}

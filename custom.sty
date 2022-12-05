@@ -7,19 +7,21 @@
 \RequirePackage{amsmath}
 \RequirePackage{amsfonts}
 \RequirePackage{amsthm}
-\RequirePackage[backend=biber]{biblatex}
+\RequirePackage[maxbibnames=99, backend=biber]{biblatex}
 \RequirePackage[boxruled,linesnumbered,noend]{algorithm2e}
 \RequirePackage[toc,page]{appendix}
 \RequirePackage{tabularx}
 \RequirePackage{lipsum}
 \RequirePackage{environ}
 \RequirePackage{color}
+\RequirePackage[T1]{fontenc}
 
 %% Sections etc.
 \newcommand\algref[1]{アルゴリズム \ref{alg:#1}}
 \newcommand\lineref[1]{第 \ref{alg:line:#1} 行}
 \newcommand\hyporef[1]{仮定 \ref{hypothesis:#1}}
-\newcommand\secref[1]{第 \ref{section:#1} 章}
+\newcommand\chapref[1]{第 \ref{chapter:#1} 章}
+\newcommand\secref[1]{第 \ref{section:#1} 節}
 
 %% Citations
 \DefineBibliographyStrings{english}{andothers={ら}}
@@ -35,3 +37,8 @@
 \def\pause{,\,}
 \def\phi{\varphi}
 \def\eqdef{\overset{def}{=}}
+
+%% FSABS
+\def\BS{BS}
+\def\FSABS{FSABS}
+\def\SolveFSABS{\textsc{Solve-FSABS}}

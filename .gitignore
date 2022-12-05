@@ -5,3 +5,5 @@
 *.dvi
 *.log
 *.run.xml
+*.lof
+*.toc
